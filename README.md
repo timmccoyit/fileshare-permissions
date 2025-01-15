@@ -26,38 +26,41 @@ This tutorial outlines the implementation of on-premises Active Directory within
 - Step 3
 - Step 4
 
-<h2>Dealing with account lockouts</h2>
+<h2>Create sample file shares with various permissions</h2>
 
-![image](https://github.com/user-attachments/assets/b3465b78-a95a-4261-a737-809145f8a206)
-![image](https://github.com/user-attachments/assets/095c1469-5a46-4373-8a3a-f6d0fe49c1d6)
-![image](https://github.com/user-attachments/assets/69836024-9636-4444-843d-3fd50fa99e95)
-![image](https://github.com/user-attachments/assets/51a26439-a526-4825-b1ed-77e2cc8b0ef0)
-![image](https://github.com/user-attachments/assets/91cdd5db-ae2c-4380-838a-3cfce471cb83)
-![image](https://github.com/user-attachments/assets/5f4923fd-4405-4bd3-9e2f-90783f55f4e2)
-![image](https://github.com/user-attachments/assets/f60a7efd-2b39-41f8-900b-034d5238de7e)
+![image](https://github.com/user-attachments/assets/5101dd03-e611-4a50-b343-43650de01986)
+![image](https://github.com/user-attachments/assets/adc8a7ea-4bb1-4bea-9e21-40d227dd77a5)
+![image](https://github.com/user-attachments/assets/8ea809b6-2552-4725-b82f-2e2b157fc51e)
+
+
 
 
 <p>
-The first we must complete for the account lockouts to function is open the Group Policy Management Console(GPMC) to create a policy that locks users out of their accounts after a certain amount of failed login attempts. Open the Group policy managment editor and go to computer config > policies > windows settings > security settings > account lockout policy then configure account lockout settings. It will recommend you settings depending on the lockout duration you pick but keep in mind you can still change it. Once this is changed, you COULD wait until the policy changes on its own but we're going to login to jane admin and run a command that forces a group policy update to save time(gpupdate /force). Running gpresult /r as an admin will show those group policy update results and when the group policy was last updated. After trying to log into the user we last used and failing the password attempts you should be locked out of your account. Active directory should show that this user has been locked out of their account, simply check the unlock account field and you should be able to login as that user again with the correct password. To reset password simple right click that user and go to reset password and choose which options apply for the situation. 
+First we go to the DC-1 vm and create some folders that will be named "read-access", "write-access", "no-access", "accounting". Now we'll go to each of these folders and right click them for properties then go to share and share to domain users for the read access and write access folders and give them the permissions that correspond with their names. For no access we will give only domain admins read and write priviledges. Now go to our normal user and try to access each share folder we created to make sure the permissions worked correctly.  
 </p>
 <br />
 
-<h2>Enabling and Disabling Accounts</h2>
+<h2>Try to open file as a normal user</h2>
 
-![image](https://github.com/user-attachments/assets/e8828a35-b5fd-4e78-9b6e-007ce8068f3e)
-![image](https://github.com/user-attachments/assets/2e06197e-2a0a-48a5-93a6-086330107c1a)
+![image](https://github.com/user-attachments/assets/4ad410f9-fcad-4293-8b33-8eab3dcead1a)
+
 
 
 <p>
-To lock and unlock an account you use the same process as resetting, HOWEVER keep in mind this user may have been locked out for a legitimate reason and for this reason make sure you are checking with your leadership/management to verify if they are allowed to have their account unlocked or not.
+We can see that on our user we can read files in the read folder but we cant create or modify folders. In the write folder we can read, create, and modify files. Lastly, in the no access folder we can't even open this folder at all as the regular user as only domain admins have permissions to do so.
 </p>
 <br />
 
-<h2>Log Observation</h2>
+<h2>Make a new Accountants Security Group and assign permissions, then test access</h2>
 
-![image](https://github.com/user-attachments/assets/51412f4d-e551-4fd6-a0fd-4b8e1b820f6a)
+![image](https://github.com/user-attachments/assets/a2df596c-42ce-4069-87d3-71c125530c06)
+![image](https://github.com/user-attachments/assets/d816a075-45c9-4285-b20b-1718e8115565)
+![image](https://github.com/user-attachments/assets/bdbf2391-acb6-4914-ac37-e1e94b35c338)
+![image](https://github.com/user-attachments/assets/084da307-a4eb-48cc-b098-f83212e4c333)
+![image](https://github.com/user-attachments/assets/0e9eaa7f-9b75-4e2c-8603-e4b1ba13b029)
+
 
 <p>
-To open the logs we'll go back to dc-1 vm and simply type event viewer into the start window and open it. From here we just go to Windows Logs > Security then from here you can view the logs and even press control+f to find the specific user we used and look at any logs showing events that pertain to that specific user.
+First we make an OU for accountants to match our folder in the network file share. Next, we'll go to the folder again in file explorer and give accountants read/write permissions. Going back to our regular user we cant access the accounting folder which is to be expected. The last step here is to make our user a member of the accountants security group in Active Directory so they can now access the folder in the file share, thus completing our lab.
 </p>
 <br />
